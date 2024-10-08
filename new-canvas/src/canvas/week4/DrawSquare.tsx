@@ -17,7 +17,7 @@ const DrawSquare = () => {
 
     if (!ctx) return;
 
-    ctx.canvas.addEventListener("click", function (event) {
+    ctx.canvas.addEventListener("click", (event) => {
       const rect = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect.left;
       const mouseY = event.clientY - rect.top;

@@ -23,7 +23,7 @@ const MoveImage = () => {
     fighterImage.src = "src/images/fighter.png";
     // const x = 0;
     const speed = 5;
-    let keyCodeValue: string;
+    let keyCodeValue: string = "";
 
     class Background {
       x: number;
@@ -53,8 +53,8 @@ const MoveImage = () => {
       h: number;
 
       constructor() {
-        this.x = 0;
-        this.y = 0;
+        this.x = 30;
+        this.y = 150;
         this.w = fighterImage.width;
         this.h = fighterImage.height;
       }
@@ -66,16 +66,6 @@ const MoveImage = () => {
 
     const background = new Background();
     const player = new Player();
-    player.x = 30;
-    player.y = 150;
-
-    const animate = () => {
-      background.render();
-      player.render();
-      update();
-    };
-
-    setInterval(animate, 30);
 
     const update = () => {
       if (keyCodeValue === "w") {
@@ -89,15 +79,27 @@ const MoveImage = () => {
       }
     };
 
-    document.addEventListener("keydown", function (event) {
-      keyCodeValue = event.key;
-      // console.log(keyCodeValue);
-      // console.log(event.keyCode + "|" + keyCodeValue);
+    const animate = () => {
+      background.render();
+      player.render();
+      update();
+    };
+
+    const intervalId = setInterval(animate, 30);
+
+    document.addEventListener("keydown", (event) => {
+      keyCodeValue = event.key.toLowerCase();
     });
 
-    document.addEventListener("keyup", function () {
+    document.addEventListener("keyup", () => {
       keyCodeValue = "";
     });
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener("keydown", () => {});
+      document.removeEventListener("keyup", () => {});
+    };
   }, []);
 
   return <canvas ref={canvasRef} />;

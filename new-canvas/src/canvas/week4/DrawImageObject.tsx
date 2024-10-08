@@ -46,7 +46,7 @@ const DrawImageObject = () => {
       }
     };
 
-    document.addEventListener("mousedown", function (event) {
+    document.addEventListener("mousedown", (event) => {
       const rect_v2 = canvas.getBoundingClientRect();
       const mouseX = event.clientX - rect_v2.left;
       const mouseY = event.clientY - rect_v2.top;

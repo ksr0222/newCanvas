@@ -123,7 +123,8 @@ const ShootingCollisionCheck = () => {
     const update = () => {
       if ("a" in keysDown) {
         player.x -= ctx_speed;
-      } else if ("d" in keysDown) {
+      }
+      if ("d" in keysDown) {
         player.x += ctx_speed;
       }
 
@@ -135,7 +136,7 @@ const ShootingCollisionCheck = () => {
     };
 
     document.addEventListener("keydown", (event) => {
-      keysDown[event.key] = true;
+      keysDown[event.key.toLowerCase()] = true;
 
       if (event.key === " ") {
         missiles.push({
@@ -149,7 +150,7 @@ const ShootingCollisionCheck = () => {
     });
 
     document.addEventListener("keyup", (event) => {
-      delete keysDown[event.key];
+      delete keysDown[event.key.toLowerCase()];
     });
 
     const animate = () => {
@@ -160,6 +161,12 @@ const ShootingCollisionCheck = () => {
     };
 
     const objAnimate = setInterval(animate, 30);
+
+    return () => {
+      clearInterval(objAnimate);
+      document.removeEventListener("keydown", () => {});
+      document.removeEventListener("keyup", () => {});
+    };
   }, []);
 
   return <canvas ref={canvasRef} />;
