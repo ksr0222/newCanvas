@@ -53,3 +53,17 @@ h1 {
   background: #fff;
   border: #909090 1px solid;
 }
+#audio_player {
+  width: 400px;
+  height: 100px;
+  background: #000;
+}
+#audio_player canvas {
+  background: transparent;
+  float: left;
+}
+#audio_box > audio {
+  width: 400px;
+  background: #002d3c;
+  float: left;
+}

@@ -27,6 +27,16 @@ import MoveImage from "./canvas/week4/MoveImage";
 import DrawSquareObject from "./canvas/week4/DrawSquareObject";
 import DrawImageObject from "./canvas/week4/DrawImageObject";
 import ShootingCollisionCheck from "./canvas/week4/ShootingCollisionCheck";
+import Snowflake from "./canvas/week5/Snowflake";
+import RealSnowflake from "./canvas/week5/RealSnowflake";
+import WindSnowflake from "./canvas/week5/WindSnowflake";
+import Particles from "./canvas/week5/Particles";
+import SplashParticles from "./canvas/week5/SplashParticles";
+import SeveralParticles from "./canvas/week5/SeveralParticles";
+import GradientParticles from "./canvas/week5/GradientParticles";
+import AudioSpectrum from "./canvas/week5/AudioSpectrum";
+import AudioSpectrumBar from "./canvas/week5/AudioSpectrumBar";
+import GradientAudioSpectrumBar from "./canvas/week5/GradientAudioSpectrumBar";
 
 function App() {
   return (
@@ -64,6 +74,19 @@ function App() {
         <DrawSquareObject />
         <DrawImageObject />
         <ShootingCollisionCheck />
+      </div>
+      <h1>🪄5주차</h1>
+      <div className="wrap">
+        <Snowflake />
+        <RealSnowflake />
+        <WindSnowflake />
+        <Particles />
+        <SplashParticles />
+        <SeveralParticles />
+        <GradientParticles />
+        <AudioSpectrum />
+        <AudioSpectrumBar />
+        <GradientAudioSpectrumBar />
       </div>
     </>
   );
