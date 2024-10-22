@@ -10,9 +10,31 @@ interface Asteroid {
   y: number;
 }
 
+interface Hitexplosion {
+  x: number;
+  y: number;
+}
+
 //6.스페이스 슈팅 게임 만들기
 const Shooting = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const bgAudio = useRef<HTMLAudioElement>(null);
+  const isSoundOn = useRef(true);
+  const keysDown: { [key: string]: boolean } = {};
+  const lasers: Lasers[] = [];
+  const laserTotal = 10;
+
+  //Audio handling
+  const toggleSound = () => {
+    if (bgAudio.current) {
+      if (isSoundOn.current) {
+        bgAudio.current.pause();
+      } else {
+        bgAudio.current.play();
+      }
+      isSoundOn.current = !isSoundOn.current; // Toggle the sound state
+    }
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -31,11 +53,11 @@ const Shooting = () => {
     const fighterImage = new Image();
     fighterImage.src = "src/images/fighter.png";
     const speed = 5;
-    const keysDown: { [key: string]: boolean } = {};
+    // const keysDown: { [key: string]: boolean } = {};
 
     let bool_laser = false;
-    const lasers: Lasers[] = [];
-    const laserTotal = 10;
+    // const lasers: Lasers[] = [];
+    // const laserTotal = 10;
 
     const laserImage = new Image();
     laserImage.src = "src/images/laser.png";
@@ -56,6 +78,35 @@ const Shooting = () => {
     const arrScale: number[] = [0.4, 0.6, 0.8, 1];
     asteroid.x = canvas.width;
     asteroid.y = Math.floor(Math.random() * 350);
+
+    let bool_explode = false;
+    const hitexplosion: Hitexplosion = { x: 0, y: 0 };
+    let bool_hitexplosion = false;
+    let spriteCount = 1;
+
+    const explodeImage = new Image();
+    explodeImage.src = "src/images/explode.png";
+
+    explodeImage.onload = function () {
+      bool_explode = true;
+    };
+
+    let bool_fighterexplosion = false;
+
+    const laserSound = new Audio("src/sounds/Laser.wav");
+    const explodeSound = new Audio("src/sounds/explosion.wav");
+    const hitexplodeSound = new Audio("src/sounds/explosion-02.wav");
+    hitexplodeSound.volume = 0.5;
+
+    const score = 0;
+    let lives = 2;
+
+    //레이저 사운드 플레이
+    const soundPlay = () => {
+      laserSound.volume = 0.12;
+      laserSound.load();
+      laserSound.play();
+    };
 
     //배경 그리기
     class Background {
@@ -122,6 +173,8 @@ const Shooting = () => {
       if (player.y >= canvas.height - 30) {
         player.y = canvas.height - 30;
       }
+
+      detectCollision();
     };
 
     //레이져 그리기
@@ -190,6 +243,102 @@ const Shooting = () => {
       }
     };
 
+    //폭발 이미지를 그리기
+    const drawExplode = () => {
+      ctx.drawImage(
+        explodeImage,
+        spriteCount * 39,
+        0,
+        39,
+        40,
+        hitexplosion.x,
+        hitexplosion.y,
+        39 * (1 + randScale),
+        40 * (1 + randScale)
+      );
+      spriteCount++;
+      if (spriteCount > 13) {
+        spriteCount = 1;
+        bool_hitexplosion = false;
+      }
+    };
+
+    //충돌 처리
+    const detectCollision = () => {
+      const aw = asteroidImage.width * randScale;
+      const ah = asteroidImage.height * randScale;
+      const fw = fighterImage.width;
+      const fh = fighterImage.height;
+
+      // fighter Collision
+      if (
+        (player.x > asteroid.x &&
+          player.x < asteroid.x + aw &&
+          player.y > asteroid.y &&
+          player.y < asteroid.y + ah) ||
+        (player.x + fw > asteroid.x &&
+          player.x + fw < asteroid.x + aw &&
+          player.y > asteroid.y &&
+          player.y < asteroid.y + ah) ||
+        (player.x > asteroid.x &&
+          player.x < asteroid.x + aw &&
+          player.y + fh > asteroid.y &&
+          player.y + fh < asteroid.y + ah) ||
+        (player.x + fw > asteroid.x &&
+          player.x + fw < asteroid.x + aw &&
+          player.y + fh > asteroid.y &&
+          player.y + fh < asteroid.y + ah)
+      ) {
+        bool_fighterexplosion = true;
+        bool_explode = true;
+        bool_hitexplosion = true;
+        hitexplosion.x = asteroid.x;
+        hitexplosion.y = asteroid.y;
+        reset();
+        resetFigher();
+        explodeSound.load();
+        explodeSound.play();
+
+        // 생명 수치 표시
+        if (lives <= 0) {
+          lives = 0;
+          // 게임 오버
+          // gameOver();
+        } else {
+          --lives;
+        }
+        // $("#lives").text(lives);
+      }
+
+      //laser Collision
+      if (lasers.length) {
+        for (let i = 0; i < lasers.length; i++) {
+          if (
+            lasers[i].x > asteroid.x &&
+            lasers[i].x < asteroid.x + aw &&
+            lasers[i].y > asteroid.y &&
+            lasers[i].y < asteroid.y + ah
+          ) {
+            hitexplosion.x = lasers[i].x;
+            hitexplosion.y = lasers[i].y;
+            bool_hitexplosion = true;
+            lasers.splice(i, 1);
+            reset();
+            console.log("hit");
+            hitexplodeSound.load();
+            hitexplodeSound.play();
+            // $("#score").text(Number($("#score").text()) + 100);
+          }
+        }
+      }
+    };
+
+    //비행기의 위치 초기화
+    const resetFigher = () => {
+      player.x = 0;
+      player.y = canvas.height / 2;
+    };
+
     const animate = () => {
       background.render();
       player.render();
@@ -200,6 +349,16 @@ const Shooting = () => {
         moveLaser();
       }
 
+      //비행기 폭발할 때 처리
+      if (bool_fighterexplosion === true) {
+        ctx.drawImage(fighterImage, (player.x += 1), player.y);
+        if (player.x >= 50) {
+          bool_fighterexplosion = false;
+        }
+      } else {
+        ctx.drawImage(fighterImage, player.x, player.y);
+      }
+
       if (bool_asteroid) {
         moveAstroid();
       } else {
@@ -207,6 +366,10 @@ const Shooting = () => {
         if (bool_asteroid) {
           reset(); //Reset을 호출해 랜덤 위치와 속도 부여
         }
+      }
+
+      if (bool_explode && bool_hitexplosion) {
+        drawExplode();
       }
 
       requestAnimationFrame(animate);
@@ -220,24 +383,45 @@ const Shooting = () => {
       reset(); //첫 초기화
     };
 
-    document.addEventListener("keydown", (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       keysDown[event.key.toLowerCase()] = true;
       if (event.key === " " && lasers.length <= laserTotal) {
         lasers.push({ x: player.x + 50, y: player.y + 10 });
+        soundPlay();
       }
-    });
+    };
 
-    document.addEventListener("keyup", (event) => {
+    const handleKeyUp = (event: KeyboardEvent) => {
       delete keysDown[event.key.toLowerCase()];
-    });
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("keyup", handleKeyUp);
 
     return () => {
-      document.removeEventListener("keydown", () => {});
-      document.removeEventListener("keyup", () => {});
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [keysDown, lasers]);
 
-  return <canvas ref={canvasRef} />;
+  return (
+    <>
+      <div
+        className={`sound ${isSoundOn.current ? "sound-on" : "sound-off"}`}
+        onClick={toggleSound}
+      ></div>
+      <audio ref={bgAudio} className="myAudio" autoPlay loop>
+        <source src="src/sounds/bg.mp3" type="audio/mpeg" />
+      </audio>
+      <canvas ref={canvasRef}></canvas>
+      <div className="lives">
+        LIVE: <span id="lives">0</span>
+      </div>
+      <div className="score">
+        SCORE: <span id="score">0</span>
+      </div>
+    </>
+  );
 };
 
 export default Shooting;
