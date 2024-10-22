@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Lasers {
   x: number;
@@ -23,17 +23,50 @@ const Shooting = () => {
   const keysDown: { [key: string]: boolean } = {};
   const lasers: Lasers[] = [];
   const laserTotal = 10;
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(2);
+  const [showGameOver, setShowGameOver] = useState(false);
+  const [gameOverSound] = useState(new Audio("src/sounds/game_over.wav"));
+  const [isGameOver, setIsGameOver] = useState(false);
 
   //Audio handling
   const toggleSound = () => {
+    if (isGameOver) {
+      if (isSoundOn.current) {
+        gameOverSound.pause();
+      } else {
+        gameOverSound.play();
+      }
+    } else {
+      if (bgAudio.current) {
+        if (isSoundOn.current) {
+          bgAudio.current.pause();
+        } else {
+          bgAudio.current.play();
+        }
+        isSoundOn.current = !isSoundOn.current; // Toggle the sound state
+      }
+    }
+  };
+
+  const restartGame = () => {
+    setShowGameOver(false);
+    setLives(2); // 초기 생명 수
+    setScore(0); // 초기 점수
+
+    setIsGameOver(false);
+    // isGameOver = false;
+
     if (bgAudio.current) {
       if (isSoundOn.current) {
-        bgAudio.current.pause();
-      } else {
         bgAudio.current.play();
+      } else {
+        bgAudio.current.pause();
       }
-      isSoundOn.current = !isSoundOn.current; // Toggle the sound state
     }
+
+    gameOverSound.currentTime = 0;
+    gameOverSound.pause();
   };
 
   useEffect(() => {
@@ -98,8 +131,15 @@ const Shooting = () => {
     const hitexplodeSound = new Audio("src/sounds/explosion-02.wav");
     hitexplodeSound.volume = 0.5;
 
-    const score = 0;
-    let lives = 2;
+    if (bgAudio.current) {
+      bgAudio.current.volume = 0.5;
+    }
+
+    // let isGameOver = false;
+    // const gameOverSound = new Audio("src/sounds/game_over.wav");
+    gameOverSound.loop = true;
+    gameOverSound.volume = 0.25;
+    gameOverSound.load();
 
     //레이저 사운드 플레이
     const soundPlay = () => {
@@ -270,7 +310,7 @@ const Shooting = () => {
       const fw = fighterImage.width;
       const fh = fighterImage.height;
 
-      // fighter Collision
+      //fighter Collision
       if (
         (player.x > asteroid.x &&
           player.x < asteroid.x + aw &&
@@ -299,15 +339,15 @@ const Shooting = () => {
         explodeSound.load();
         explodeSound.play();
 
-        // 생명 수치 표시
-        if (lives <= 0) {
-          lives = 0;
-          // 게임 오버
-          // gameOver();
-        } else {
-          --lives;
+        if (lives > 0) {
+          setLives((prev) => {
+            const newLives = prev - 1;
+            if (newLives < 0) {
+              gameOver();
+            }
+            return newLives;
+          });
         }
-        // $("#lives").text(lives);
       }
 
       //laser Collision
@@ -324,7 +364,8 @@ const Shooting = () => {
             bool_hitexplosion = true;
             lasers.splice(i, 1);
             reset();
-            console.log("hit");
+            setScore((prev) => prev + 100);
+            // console.log("hit");
             hitexplodeSound.load();
             hitexplodeSound.play();
             // $("#score").text(Number($("#score").text()) + 100);
@@ -339,37 +380,63 @@ const Shooting = () => {
       player.y = canvas.height / 2;
     };
 
+    //게임 오버 화면
+    const gameOver = () => {
+      setIsGameOver(true);
+      bool_explode = false;
+
+      // Toggle sound off
+      if (bgAudio.current) {
+        bgAudio.current.pause();
+        bgAudio.current.currentTime = 0;
+      }
+
+      // Play game over sound if sound is on
+      if (isSoundOn.current) {
+        gameOverSound.currentTime = 0;
+        gameOverSound.play();
+      }
+
+      // Show game over screen
+      setShowGameOver(true); // 새로운 상태를 추가합니다.
+    };
+
     const animate = () => {
-      background.render();
-      player.render();
-      update();
+      if (!isGameOver) {
+        background.render();
+        player.render();
 
-      if (bool_laser) {
-        drawLaser();
-        moveLaser();
-      }
+        update();
 
-      //비행기 폭발할 때 처리
-      if (bool_fighterexplosion === true) {
-        ctx.drawImage(fighterImage, (player.x += 1), player.y);
-        if (player.x >= 50) {
-          bool_fighterexplosion = false;
+        if (bool_laser) {
+          drawLaser();
+          moveLaser();
         }
-      } else {
-        ctx.drawImage(fighterImage, player.x, player.y);
-      }
 
-      if (bool_asteroid) {
-        moveAstroid();
-      } else {
-        //운석이 로드되면 이동 시작
+        //비행기 폭발할 때 처리
+        if (bool_fighterexplosion) {
+          ctx.drawImage(fighterImage, (player.x += 1), player.y);
+          if (player.x >= 50) {
+            bool_fighterexplosion = false;
+          }
+        } else {
+          ctx.drawImage(fighterImage, player.x, player.y);
+        }
+
         if (bool_asteroid) {
-          reset(); //Reset을 호출해 랜덤 위치와 속도 부여
+          moveAstroid();
+        } else {
+          //운석이 로드되면 이동 시작
+          if (bool_asteroid) {
+            reset(); //Reset을 호출해 랜덤 위치와 속도 부여
+          }
         }
-      }
 
-      if (bool_explode && bool_hitexplosion) {
-        drawExplode();
+        if (bool_explode && bool_hitexplosion) {
+          drawExplode();
+        }
+      } else {
+        return;
       }
 
       requestAnimationFrame(animate);
@@ -402,7 +469,7 @@ const Shooting = () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, [keysDown, lasers]);
+  }, []);
 
   return (
     <>
@@ -415,11 +482,21 @@ const Shooting = () => {
       </audio>
       <canvas ref={canvasRef}></canvas>
       <div className="lives">
-        LIVE: <span id="lives">0</span>
+        LIVE: <span>{lives}</span>
       </div>
       <div className="score">
-        SCORE: <span id="score">0</span>
+        SCORE: <span>{score}</span>
       </div>
+      {showGameOver && (
+        <div className="game-over" id="game-over">
+          GAME OVER
+          <p>
+            <span id="restart" onClick={restartGame}>
+              [Restart]
+            </span>
+          </p>
+        </div>
+      )}
     </>
   );
 };
