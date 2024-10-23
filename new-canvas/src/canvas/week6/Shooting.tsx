@@ -159,9 +159,11 @@ const Shooting = () => {
       }
 
       render = () => {
-        ctx?.drawImage(spaceImage, this.x--, 0);
-        if (this.x <= -600) {
-          this.x = 0;
+        if (!isGameOver) {
+          ctx?.drawImage(spaceImage, this.x--, 0);
+          if (this.x <= -600) {
+            this.x = 0;
+          }
         }
       };
     }
@@ -435,10 +437,7 @@ const Shooting = () => {
         if (bool_explode && bool_hitexplosion) {
           drawExplode();
         }
-      } else {
-        return;
       }
-
       requestAnimationFrame(animate);
     };
 
@@ -451,10 +450,12 @@ const Shooting = () => {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      keysDown[event.key.toLowerCase()] = true;
-      if (event.key === " " && lasers.length <= laserTotal) {
-        lasers.push({ x: player.x + 50, y: player.y + 10 });
-        soundPlay();
+      if (!isGameOver) {
+        keysDown[event.key.toLowerCase()] = true;
+        if (event.key === " " && lasers.length <= laserTotal) {
+          lasers.push({ x: player.x + 50, y: player.y + 10 });
+          soundPlay();
+        }
       }
     };
 
@@ -469,7 +470,7 @@ const Shooting = () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, []);
+  }, [isGameOver]);
 
   return (
     <>
