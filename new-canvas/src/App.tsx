@@ -37,7 +37,8 @@ import "./App.css";
 // import AudioSpectrum from "./canvas/week5/AudioSpectrum";
 // import AudioSpectrumBar from "./canvas/week5/AudioSpectrumBar";
 // import GradientAudioSpectrumBar from "./canvas/week5/GradientAudioSpectrumBar";
-import Shooting from "./canvas/week6/Shooting";
+// import Shooting from "./canvas/week6/Shooting";
+import Dot from "./canvas/week7/dot";
 
 function App() {
   return (
@@ -89,9 +90,13 @@ function App() {
         <AudioSpectrumBar />
         <GradientAudioSpectrumBar />
       </div> */}
-      <h1>🪄6주차</h1>
+      {/* <h1>🪄6주차</h1>
       <div className="wrap">
         <Shooting />
+      </div> */}
+      <h1>🪄7주차</h1>
+      <div className="wrap">
+        <Dot />
       </div>
     </>
   );
