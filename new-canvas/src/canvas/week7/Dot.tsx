@@ -71,7 +71,7 @@ const Dot = () => {
       arrCoords.push(mouseX + "," + mouseY);
       //총 포인트의 개수와 같으면 완성된 이미지를 보여주기
       if (arrCoords.length === totalPoint) {
-        alert("잘 하셨습니다.");
+        alert("Goooooood jobbbbbb!");
         render();
       }
       // console.log(arrCoords);
