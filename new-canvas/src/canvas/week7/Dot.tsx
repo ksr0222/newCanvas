@@ -57,8 +57,9 @@ const Dot = () => {
       //circle draw
       ctx.beginPath();
       ctx.arc(mouseX, mouseY, radius, 0, 6.28);
-      ctx.fillStyle = "yellow";
+      ctx.fillStyle = "#5cffd1";
       ctx.fill();
+      ctx.strokeStyle = "#ff66cc";
       ctx.stroke();
 
       //text draw
