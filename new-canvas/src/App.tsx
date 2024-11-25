@@ -99,7 +99,7 @@ function App() {
       <div className="wrap">
         <Dot />
       </div> */}
-      <h1>🎄🎁🎶☃️🎅🏾🦌🛷❄️🤶🏾🌟⛄🎁🌨️🧦👼🕯️🎄</h1>
+      <h1>🎄🎁🎶☃️🕯️🎅🏾🦌🛷❄️🤶🏾🌟⛄🎁🌨️🧦🦌🛷👼🕯️🎄</h1>
       <div className="wrap">
         <Orgel />
       </div>
